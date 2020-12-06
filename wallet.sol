@@ -70,7 +70,6 @@ contract TimelockableWallet is OwnableWallet{
 contract managesTokens is OwnableWallet{
     
     event TransferDone(address indexed cont, address indexed _addr, uint _val);
-    event Test(bool indexed ab, bytes indexed ee );
     
     function transferERC20(address _cont, address _addr, uint256 _val) public onlyOwner {
         (bool success, ) = _cont.call(abi.encodeWithSignature("transfer(address,uint256)", _addr, _val));
