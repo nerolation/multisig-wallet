@@ -14,7 +14,6 @@ contract OwnableWallet{
     constructor() {
         owner = msg.sender;
     }
-
     
     function updateOwner(address _addr) public onlyOwner {
         owner = _addr;
@@ -45,7 +44,6 @@ contract NotaryWallet is OwnableWallet{
 }
 
 contract TimelockableWallet is OwnableWallet{
-    
     uint public time;
     
     event TimelockAdded(uint indexed time);
@@ -55,7 +53,6 @@ contract TimelockableWallet is OwnableWallet{
         require(block.timestamp > time, "Timelocked");
         _;
     }
-   
     
     function addTimeLock(uint ts) public onlyOwner {
         require(ts > block.timestamp);
@@ -155,10 +152,3 @@ contract MyWallet is OwnableWallet, NotaryWallet, TimelockableWallet{
         emit Execution(_tx.destination, _tx.data, _tx.value);
     }
 }
-
-
-
-
-
-
-
