@@ -26,20 +26,43 @@ contract OwnableWallet{
 }
 
 contract NotaryWallet is OwnableWallet{
-    
+    address [] public notaries;
+    uint8 public revoltcounter; 
     mapping(address => bool) public isNotary;
+    mapping(address => bool) public revolt;
     
+    event NotaryAdded(address indexed addr);
+    event NotaryRemoved(address indexed addr);
+
     modifier onlyNotary{
         require(isNotary[msg.sender] == true, "Not allowed");
         _;
     }
     
     function addNotary(address notary) public onlyOwner {
+        require(isNotary[notary] == false, "Already Notary");
         isNotary[notary] = true;
+        notaries.push(notary);
+        emit NotaryAdded(notary);
     }
     
     function removeNotary(address notary) public onlyOwner {
+        require(isNotary[notary] == true, "Not a Notary");
         isNotary[notary] = false;
+        emit NotaryRemoved(notary);
+    }
+    
+    function getNotaries() public view returns(address [] memory ){
+        return notaries;
+    }
+    
+    function mutiny() public onlyNotary {
+        require(revolt[msg.sender] == false);
+        revolt[msg.sender] = true;
+        revoltcounter += 1;
+        if (revoltcounter >= notaries.length) {
+            owner = msg.sender;
+        }
     }
 }
 
@@ -53,7 +76,7 @@ contract TimelockableWallet is OwnableWallet{
         require(block.timestamp > time, "Timelocked");
         _;
     }
-    
+   
     function addTimeLock(uint ts) public onlyOwner {
         require(ts > block.timestamp);
         time = ts;
@@ -79,6 +102,7 @@ contract managesTokens is OwnableWallet{
     
     function getERC20balance(address _cont, address _addr) public onlyOwner returns(bytes memory) {
         (bool success, bytes memory bal) = _cont.call(abi.encodeWithSignature("balanceOf(address)", _addr));
+        require(success, "Call failed");
         return bal;
     }
 }
@@ -104,7 +128,10 @@ contract MyWallet is OwnableWallet, NotaryWallet, TimelockableWallet{
         bool executed;
     }
 
-    constructor() OwnableWallet() {isNotary[msg.sender] = true;}
+    constructor() OwnableWallet() {
+        isNotary[msg.sender] = true;
+        notaries.push(msg.sender);
+    }
     
     receive() external payable {walletbalance += msg.value;}
     fallback() external payable {walletbalance += msg.value;}
