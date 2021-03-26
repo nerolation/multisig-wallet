@@ -58,9 +58,10 @@ contract NotaryWallet is OwnableWallet{
     
     function mutiny() public onlyNotary {
         require(revolt[msg.sender] == false);
+        require(notaries.length >= 2, "Not enough notaries");
         revolt[msg.sender] = true;
         revoltcounter += 1;
-        if (revoltcounter >= notaries.length) {
+        if (revoltcounter >= notaries.length-1) {
             owner = msg.sender;
         }
     }
@@ -90,7 +91,7 @@ contract TimelockableWallet is OwnableWallet{
     }
 }
 
-contract managesTokens is OwnableWallet{
+contract TokenManager is OwnableWallet{
     
     event TransferDone(address indexed cont, address indexed _addr, uint _val);
     
@@ -107,7 +108,7 @@ contract managesTokens is OwnableWallet{
     }
 }
 
-contract MyWallet is OwnableWallet, NotaryWallet, TimelockableWallet{
+contract MyWallet is OwnableWallet, NotaryWallet, TimelockableWallet, TokenManager{
     uint public walletbalance;
     
     event Execution(address indexed addr, bytes indexed data, uint indexed value);
